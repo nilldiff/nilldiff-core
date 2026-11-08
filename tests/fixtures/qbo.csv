@@ -1,0 +1,12 @@
+Acme LLC
+Transaction List by Date
+October 2026
+
+Date,Transaction type,Num,Name,Memo/Description,Amount
+10/01/2026,Deposit,,Stripe,Payout 2026-10-01,"1,234.56"
+10/03/2026,Check,1001,Landlord Co,Rent,"-2,500.00"
+10/14/2026,Deposit,,Customer A,INV 1041,"3,000.00"
+10/14/2026,Deposit,,Customer A,INV 1042,"2,000.00"
+10/20/2026,Expense,,Adobe,Creative Cloud,-54.99
+10/28/2026,Expense,,Staples,Office Supplies,-300.00
+Total,,,,,"3,379.57"

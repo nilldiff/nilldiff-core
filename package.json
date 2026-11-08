@@ -1,0 +1,16 @@
+{
+  "name": "recon-core",
+  "version": "0.1.0",
+  "description": "Reads bank and card statement PDFs, QuickBooks reports and bank exports, and reconciles them in the browser. Nothing is uploaded.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": { "./*": "./src/*.ts" },
+  "files": ["src"],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && node --import tsx --test tests/*.test.ts",
+    "verify": "npm test && npm audit --omit=dev --audit-level=high"
+  },
+  "dependencies": { "fflate": "^0.8.3", "pdfjs-dist": "^6.5.438" },
+  "devDependencies": { "@types/node": "^26.6.6", "tsx": "^4.23.15", "typescript": "^7.0.2" }
+}

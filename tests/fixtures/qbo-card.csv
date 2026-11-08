@@ -1,0 +1,23 @@
+Acme Test LLC,,,,,,,,,,,
+Transaction Report,,,,,,,,,,,
+"November 16-December 15, 2026",,,,,,,,,,,
+,,,,,,,,,,,
+,Transaction date,Transaction type,Num,Name,Description,Account Name,Item split account,Amount,Balance,Debit,Credit
+Summit Business Card (7123),,,,,,,,,,,
+,Beginning Balance,,,,,,,,"4,250.10",,
+,11/13/2026,Expense,,,ACME SUPPLY CO,Summit Business Card (7123),Software & apps,310.75,"4,560.85",,310.75
+,11/19/2026,Expense,,,CLOUDHOST INC,Summit Business Card (7123),Software & apps,49.00,"4,609.85",,49.00
+,11/21/2026,Credit Card Payment,,,MOBILE PAYMENT - THANK YOU,Summit Business Card (7123),Software & apps,"-1,200.00","3,409.85","1,200.00",
+,11/22/2026,Expense,,,HOTEL LINDEN PORTLAND,Summit Business Card (7123),Software & apps,412.36,"3,822.21",,412.36
+,11/24/2026,Expense,,,TRANSACTION PROCESSED BY BANK,Summit Business Card (7123),Software & apps,15.00,"3,837.21",,15.00
+,11/29/2026,Credit Card Credit,,,SUMMIT OUTLET RETURN,Summit Business Card (7123),Software & apps,-85.20,"3,752.01",85.20,
+,12/02/2026,Expense,,,PRINT SHOP 12,Summit Business Card (7123),Software & apps,128.40,"3,880.41",,128.40
+,12/03/2026,Credit Card Payment,,,ONLINE PAYMENT - THANK YOU,Summit Business Card (7123),Software & apps,"-3,000.50",879.91,"3,000.50",
+,12/06/2026,Expense,,,FUEL STOP 221,Summit Business Card (7123),Software & apps,64.12,944.03,,64.12
+,12/11/2026,Expense,,,SOFTWARE SUB MONTHLY,Summit Business Card (7123),Software & apps,29.99,974.02,,29.99
+,12/12/2026,Expense,,,BANK SERVICE FEE,Summit Business Card (7123),Software & apps,5.00,979.02,,5.00
+,12/15/2026,Expense,,,ACME SUPPLY CO,Summit Business Card (7123),Software & apps,310.75,"1,289.77",,310.75
+Total for Summit Business Card (7123),,,,,,,,"-$2,960.33",,"$4,285.70","$1,325.37"
+TOTAL,,,,,,,,"-$2,960.33",,"$4,285.70","$1,325.37"
+,,,,,,,,,,,
+"Accrual Basis Saturday, December 19, 2026 09:00 AM GMT-08:00",,,,,,,,,,,
