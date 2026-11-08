@@ -56,14 +56,18 @@ const friendly = (file: string, e: unknown): TableError => {
   const m = e instanceof Error ? e.message : String(e);
   return e instanceof TableError ? e : new TableError(/too large|out of range/.test(m) ? `${file}: this sheet is too large to read safely (about ${MAX_ROWS.toLocaleString("en-US")} rows at ten columns).` : `${file}: ${m}`);
 };
+export const isPdf = (b: Uint8Array): boolean => b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46;
+const guard = (file: string, bytes: Uint8Array): void => { if (bytes.length > MAX_FILE) throw new TableError(`${file}: larger than ${MAX_FILE / 2 ** 20} MB.`); };
+/** Spreadsheet or CSV bytes to a table, synchronously (no PDF reader is pulled in, so a worker bundle stays small). */
+export const readSheet = (file: string, bytes: Uint8Array): Table => {
+  guard(file, bytes);
+  try { const x = isXlsx(bytes); return buildTable(file, x ? "xlsx" : "csv", x ? readXlsx(bytes) : parseCsv(new TextDecoder().decode(bytes))); } catch (e) { throw friendly(file, e); }
+};
 /** Reads one file by its bytes, not its name. PDF text extraction loads on first use. */
 export const readTable = async (file: string, bytes: Uint8Array): Promise<Table> => {
-  if (bytes.length > MAX_FILE) throw new TableError(`${file}: larger than ${MAX_FILE / 2 ** 20} MB.`);
-  try {
-    if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) return tableFromCells(file, (await (await import("./pdftext.ts")).pdfLayout(bytes)).cells);
-    const x = isXlsx(bytes);
-    return buildTable(file, x ? "xlsx" : "csv", x ? readXlsx(bytes) : parseCsv(new TextDecoder().decode(bytes)));
-  } catch (e) { throw friendly(file, e); }
+  guard(file, bytes);
+  if (!isPdf(bytes)) return readSheet(file, bytes);
+  try { return tableFromCells(file, (await (await import("./pdftext.ts")).pdfLayout(bytes)).cells); } catch (e) { throw friendly(file, e); }
 };
 
 export interface ColInfo { type: ColType; unique: number; intOnly: boolean; sample: string[] }
