@@ -1,6 +1,8 @@
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 
 export class PdfError extends Error {}
+/** In a browser, where the PDF.js worker file is served (e.g. "/pdf.worker.mjs"). Set once before the first PDF is read. */
+export const setPdfWorker = (url: string): void => { pdfjs.GlobalWorkerOptions.workerSrc = url; };
 const MAX_PAGES = 60, MAX_LINES = 50_000;
 
 /** Text of a text-based PDF as visual lines (top to bottom, items left to right, wide gaps kept as two spaces). Nothing in the PDF is executed. */
