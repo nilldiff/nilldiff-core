@@ -1,11 +1,11 @@
 import type { Cell } from "./pdftext.ts";
-import { parseCsv } from "./csv.ts";
+import { CsvLimit, parseCsv } from "./csv.ts";
 import { toIsoDate } from "./dates.ts";
 import { toCents } from "./money.ts";
 import { isXlsx, readXlsx } from "./xlsx.ts";
 
 /** Any two-dimensional list read from a spreadsheet, CSV or text PDF: a header row and the rows under it. Nothing is kept beyond this object. */
-export const MAX_FILE = 50 * 2 ** 20, MAX_ROWS = 150_000, MAX_COLS = 200;
+export const MAX_FILE = 50 * 2 ** 20, MAX_ROWS = 150_000, MAX_COLS = 200, MAX_CSV_CELLS = 8_000_000;
 export class TableError extends Error {}
 export type ColType = "num" | "date" | "text";
 export interface Table { file: string; origin: "xlsx" | "csv" | "pdf"; headers: string[]; rows: string[][]; dropped: number }
@@ -58,10 +58,15 @@ const friendly = (file: string, e: unknown): TableError => {
 };
 export const isPdf = (b: Uint8Array): boolean => b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46;
 const guard = (file: string, bytes: Uint8Array): void => { if (bytes.length > MAX_FILE) throw new TableError(`${file}: larger than ${MAX_FILE / 2 ** 20} MB.`); };
+/** Room above the row limit for title rows over the header, the same allowance buildTable gives. */
+const csv = (file: string, bytes: Uint8Array): string[][] => {
+  try { return parseCsv(new TextDecoder().decode(bytes), Math.ceil(MAX_ROWS * 1.2) + 30, MAX_CSV_CELLS); }
+  catch (e) { if (e instanceof CsvLimit) throw new TableError(`${file}: ${e.message}; the limit is ${MAX_ROWS.toLocaleString("en-US")} rows.`); throw e; }
+};
 /** Spreadsheet or CSV bytes to a table, synchronously (no PDF reader is pulled in, so a worker bundle stays small). */
 export const readSheet = (file: string, bytes: Uint8Array): Table => {
   guard(file, bytes);
-  try { const x = isXlsx(bytes); return buildTable(file, x ? "xlsx" : "csv", x ? readXlsx(bytes) : parseCsv(new TextDecoder().decode(bytes))); } catch (e) { throw friendly(file, e); }
+  try { const x = isXlsx(bytes); return buildTable(file, x ? "xlsx" : "csv", x ? readXlsx(bytes) : csv(file, bytes)); } catch (e) { throw friendly(file, e); }
 };
 /** Reads one file by its bytes, not its name. PDF text extraction loads on first use. */
 export const readTable = async (file: string, bytes: Uint8Array): Promise<Table> => {

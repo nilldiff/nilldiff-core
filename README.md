@@ -37,7 +37,8 @@ In a browser, call `setPdfWorker(url)` from `recon-core/pdftext` before reading 
 
 These are built in so a hostile file can't hang a tab:
 - 50 MB per file, 150,000 rows and 200 columns per table;
-- 60 pages and 50,000 text lines per PDF;
+- 60 pages, 50,000 text lines and 500,000 pieces of text per PDF;
+- 8 million cells per CSV, counted while it is read;
 - 2 million cells per spreadsheet;
 - money as integer cents, capped at safe integers.
 
