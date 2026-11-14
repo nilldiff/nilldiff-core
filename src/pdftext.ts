@@ -23,9 +23,9 @@ export const pdfLayout = async (bytes: Uint8Array): Promise<Layout> => {
     for (let p = 1; p <= doc.numPages; p++) {
       const items = (await (await doc.getPage(p)).getTextContent()).items.flatMap((i) => ("str" in i && i.str.trim() ? [{ s: i.str, x: i.transform[4] as number, y: i.transform[5] as number, w: i.width }] : []));
       cells.push(...groupCells(items));
-      if (cells.length > MAX_LINES) throw new PdfError(`This PDF has more than ${MAX_LINES} lines of text, more than a real statement; it was not read.`);
+      if (cells.length > MAX_LINES) throw new PdfError(`This PDF has more than ${MAX_LINES} lines of text, more than a real document; it was not read.`);
     }
-    if (!cells.length) throw new PdfError("This PDF has no readable text (likely a scanned image). Scanned statements are not supported yet.");
+    if (!cells.length) throw new PdfError("This PDF has no readable text (likely a scanned image). Scanned documents are not supported.");
     return { lines: cells.map(joinCells), cells };
   } finally { await task.destroy(); }
 };

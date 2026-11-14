@@ -59,7 +59,7 @@ test("suggestMapping: the key is an id, not an amount column that happens to rep
   assert.equal(suggestMapping(tbl("c.csv", [["Name", "Qty"], ["x", "1"], ["y", "2"]]), tbl("d.csv", [["Color", "Size"], ["red", "9"], ["blue", "8"]])).key, null);
 });
 
-test("suggestMapping: Excel dates stored as serial numbers are read as dates when the header says date", async () => {
+test("suggestMapping: spreadsheet dates stored as serial numbers are read as dates when the header says date", async () => {
   const x = (rows: (string | number)[][]) => writeXlsx([{ name: "Sheet1", rows }]);
   const ta = await readTable("a.xlsx", x([["Loan ID", "UPB", "Next Due"], ["L1", 1000.5, 46000], ["L2", 2000, 46010], ["L3", 3000, 46020]]));
   const tb = await readTable("b.xlsx", x([["Loan Number", "Ending UPB", "Due Date"], ["L1", 1000.5, 46000], ["L2", 1999, 46010], ["L3", 3000, 46024]]));
@@ -82,11 +82,11 @@ test("parseTol: free-form amounts, percents, days and text rules", () => {
 
 const run = (prec: "A" | "B", tols = ["1", "1", "exact", "3"]) => { const a = tbl("a.csv", A), b = tbl("b.csv", B), m = suggestMapping(a, b); return new Diff(a, b, m, { prec, tols, names }); };
 
-test("Diff: counts, field breaks and totals on the known differences", () => {
+test("Diff: counts, field differences and totals on the known differences", () => {
   const d = run("A");
   assert.deepEqual({ ...d.counts }, { ok: 2, tol: 2, brk: 3, onlyA: 1, onlyB: 1, fieldBreaks: 4, dupKeysA: 0, dupKeysB: 0 });
   const exc = d.page("exc", 0, 100);
-  assert.deepEqual(exc.map((r) => [r.key, r.result]), [["INV-20403", "1 break"], ["INV-20404", "2 breaks"], ["INV-20407", "1 break"], ["INV-20408", "Only in ledger"], ["INV-20409", "Only in statement"]]);
+  assert.deepEqual(exc.map((r) => [r.key, r.result]), [["INV-20403", "1 difference"], ["INV-20404", "2 differences"], ["INV-20407", "1 difference"], ["INV-20408", "Only in ledger"], ["INV-20409", "Only in statement"]]);
   const r403 = exc[0]!;
   assert.deepEqual(r403.cells.map((c) => c.cls), ["ok", "brk", "ok", "ok"]);
   assert.equal(r403.cells[1]!.top, "5,780.50"); assert.equal(r403.cells[1]!.sub, "statement 10,780.50 · Δ +5,000.00");
@@ -130,7 +130,7 @@ test("exportRows: header plus one row per row in the filter, numbers as numbers,
   const d = run("A"), x = d.exportRows("exc");
   assert.equal(x.length, 1 + 5); assert.equal(x[0]!.length, 2 + 4 * 4);
   const r = x.find((r) => r[0] === "INV-20403")!;
-  assert.deepEqual(r.slice(0, 2), ["INV-20403", "1 break"]); assert.deepEqual(r.slice(6, 10), [5780.5, 10780.5, 5000, 5780.5]);
+  assert.deepEqual(r.slice(0, 2), ["INV-20403", "1 difference"]); assert.deepEqual(r.slice(6, 10), [5780.5, 10780.5, 5000, 5780.5]);
   assert.equal(d.exportRows("all").length, 1 + 9);
   assert.deepEqual(run("B").exportRows("exc").find((r) => r[0] === "INV-20403")!.slice(6, 10), [5780.5, 10780.5, 5000, 10780.5]);
 });

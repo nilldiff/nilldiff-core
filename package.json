@@ -1,7 +1,7 @@
 {
   "name": "recon-core",
   "version": "0.1.0",
-  "description": "Reads bank and card statement PDFs, QuickBooks reports and bank exports, and reconciles them in the browser. Nothing is uploaded.",
+  "description": "Compares two tables (.xlsx, CSV or text PDF) by a key column in the browser: matches, differences with tolerances, and rows missing on either side. Nothing is uploaded.",
   "license": "AGPL-3.0-only",
   "type": "module",
   "exports": { "./*": "./src/*.ts" },

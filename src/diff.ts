@@ -59,7 +59,7 @@ export class Diff {
     const s = this.st[i]!, status = CODE[s]!, { key, pairs } = this.map, only = s >= 3, src = only ? (s === 3 ? this.A : this.B) : null, r = only ? src!.rows[(s === 3 ? this.ra : this.rb)[i]!]! : null;
     const cells: Cell[] = pairs.map((p, k) => only ? { top: show(p.type, r![s === 3 ? p.a : p.b]!, typed(p.type, r![s === 3 ? p.a : p.b]!)), sub: "", cls: "off" } : this.cmp(i, k));
     const nb = cells.filter((c) => c.cls === "brk").length;
-    return { key: only ? r![s === 3 ? key!.a : key!.b]! : this.A.rows[this.ra[i]!]![key!.a]!, status, cells, result: s === 3 ? `Only in ${this.opts.names[0]}` : s === 4 ? `Only in ${this.opts.names[1]}` : nb ? `${nb} break${nb > 1 ? "s" : ""}` : s === 1 ? "Within tolerance" : "Clean" };
+    return { key: only ? r![s === 3 ? key!.a : key!.b]! : this.A.rows[this.ra[i]!]![key!.a]!, status, cells, result: s === 3 ? `Only in ${this.opts.names[0]}` : s === 4 ? `Only in ${this.opts.names[1]}` : nb ? `${nb} difference${nb > 1 ? "s" : ""}` : s === 1 ? "Within tolerance" : "Match" };
   }
   /** At most `limit` rows of a filter, starting at `offset`. */
   page(f: Filter, offset: number, limit: number): Row[] { return this.sel(f).slice(offset, offset + limit).map((i) => this.row(i)); }

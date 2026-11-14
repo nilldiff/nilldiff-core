@@ -6,7 +6,7 @@ const iso = (y: number, m: number, d: number): string | null => {
 };
 const year = (y: string): number => (y.length === 2 ? 2000 + Number(y) : Number(y));
 
-/** Date text, US m/d/y, ISO, "Jan 5, 2026" or an Excel serial to YYYY-MM-DD. null when not a date. */
+/** Date text, US m/d/y, ISO, "Jan 5, 2026" or a spreadsheet serial number to YYYY-MM-DD. null when not a date. */
 export const toIsoDate = (v: string | number | null | undefined): string | null => {
   const s = String(v ?? "").trim();
   let m: RegExpExecArray | null;
