@@ -3,25 +3,27 @@ import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 export class PdfError extends Error {}
 /** In a browser, where the PDF.js worker file is served (e.g. "/pdf.worker.mjs"). Set once before the first PDF is read. */
 export const setPdfWorker = (url: string): void => { pdfjs.GlobalWorkerOptions.workerSrc = url; };
-const MAX_PAGES = 60, MAX_LINES = 50_000;
+export const MAX_PAGES = 60, MAX_LINES = 50_000, MAX_ITEMS = 500_000;
 
 /** Text of a text-based PDF as visual lines (top to bottom, items left to right, wide gaps kept as two spaces). Nothing in the PDF is executed. */
 export interface Layout { lines: string[]; cells: Cell[][] }
 /** Text lines plus, for each line, its cells (runs of text separated by wide gaps) with their left and right x, so a parser can tell which column an amount sits in. */
 export const pdfLayout = async (bytes: Uint8Array): Promise<Layout> => {
-  const task = pdfjs.getDocument({ data: bytes.slice(), disableFontFace: true, useSystemFonts: false, verbosity: 0 });
+  const task = pdfjs.getDocument({ data: bytes.slice(), disableFontFace: true, useSystemFonts: false, enableXfa: false, verbosity: 0 });
   let doc: pdfjs.PDFDocumentProxy;
   try {
     doc = await task.promise;
   } catch (e) {
     await task.destroy().catch(() => {});
-    throw new PdfError((e as { name?: string }).name === "PasswordException" ? "This PDF is password protected. Download an unprotected copy from online banking." : "This file could not be read as a PDF.");
+    throw new PdfError((e as { name?: string }).name === "PasswordException" ? "This PDF is password protected. Save an unprotected copy and try that." : "This file could not be read as a PDF.");
   }
   try {
     if (doc.numPages > MAX_PAGES) throw new PdfError(`This PDF has ${doc.numPages} pages; the limit is ${MAX_PAGES}.`);
-    const cells: Cell[][] = [];
+    const cells: Cell[][] = []; let seen = 0;
     for (let p = 1; p <= doc.numPages; p++) {
-      const items = (await (await doc.getPage(p)).getTextContent()).items.flatMap((i) => ("str" in i && i.str.trim() ? [{ s: i.str, x: i.transform[4] as number, y: i.transform[5] as number, w: i.width }] : []));
+      const raw = (await (await doc.getPage(p)).getTextContent()).items;
+      if ((seen += raw.length) > MAX_ITEMS) throw new PdfError(`This PDF has more than ${MAX_ITEMS.toLocaleString("en-US")} pieces of text, more than a real document; it was not read.`);
+      const items = raw.flatMap((i) => ("str" in i && i.str.trim() ? [{ s: i.str, x: i.transform[4] as number, y: i.transform[5] as number, w: i.width }] : []));
       cells.push(...groupCells(items));
       if (cells.length > MAX_LINES) throw new PdfError(`This PDF has more than ${MAX_LINES} lines of text, more than a real document; it was not read.`);
     }
