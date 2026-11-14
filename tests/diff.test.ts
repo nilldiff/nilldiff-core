@@ -59,7 +59,7 @@ test("suggestMapping: the key is an id, not an amount column that happens to rep
   assert.equal(suggestMapping(tbl("c.csv", [["Name", "Qty"], ["x", "1"], ["y", "2"]]), tbl("d.csv", [["Color", "Size"], ["red", "9"], ["blue", "8"]])).key, null);
 });
 
-test("suggestMapping: Excel dates stored as serial numbers are read as dates when the header says date", async () => {
+test("suggestMapping: spreadsheet dates stored as serial numbers are read as dates when the header says date", async () => {
   const x = (rows: (string | number)[][]) => writeXlsx([{ name: "Sheet1", rows }]);
   const ta = await readTable("a.xlsx", x([["Loan ID", "UPB", "Next Due"], ["L1", 1000.5, 46000], ["L2", 2000, 46010], ["L3", 3000, 46020]]));
   const tb = await readTable("b.xlsx", x([["Loan Number", "Ending UPB", "Due Date"], ["L1", 1000.5, 46000], ["L2", 1999, 46010], ["L3", 3000, 46024]]));

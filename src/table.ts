@@ -76,7 +76,7 @@ const SAMPLE = 2000;
 export const normKey = (s: string): string => { const t = s.trim().toUpperCase().replace(/\s+/g, " ").replace(/^(\d+)\.0+$/, "$1"); return /^\d+$/.test(t) ? t.replace(/^0+(?=\d)/, "") : t; };
 /** Every distinct normal-form value of a column (used for key candidates only, so memory stays small). */
 export const keySet = (t: Table, j: number): Set<string> => { const s = new Set<string>(); for (const r of t.rows) { const k = normKey(r[j]!); if (k) s.add(k); } return s; };
-/** Type of a column from a sample of its values: dates by their text (or by Excel serials when the header says date), numbers by money parsing, else text. */
+/** Type of a column from a sample of its values: dates by their text (or by spreadsheet serial numbers when the header says date), numbers by money parsing, else text. */
 export const colInfo = (t: Table, j: number): ColInfo => {
   const step = Math.max(1, Math.floor(t.rows.length / SAMPLE)), sample: string[] = [];
   for (let i = 0; i < t.rows.length && sample.length < SAMPLE; i += step) { const x = t.rows[i]![j]!; if (x) sample.push(x); }

@@ -1,31 +1,20 @@
-# recon-core
+# nildiff-core
 
-The processing code behind [TieOut](#): it reads bank and card statement PDFs, QuickBooks reports and bank exports (CSV or xlsx), and reconciles them. It runs entirely in the browser. Files are read in memory and never uploaded, stored or logged.
+The comparison engine behind [nildiff](https://www.nildiff.com). It compares two tables by a key column: what matches, what differs (with tolerances you set), and what exists on only one side. It runs entirely in the browser. Files are read in memory and never uploaded, stored or logged.
 
 This repo is public so anyone can check exactly what happens to their files.
 
+It is not designed for bank or credit card statement reconciliation, is not accounting software, and is not affiliated with any bank or software vendor. Results are not accounting, tax or financial advice.
+
 ## What it does
 
-- `readFile(name, bytes)` → sources. A PDF statement is read from its text, with no OCR and nothing executed. A spreadsheet is read by its header row. A QuickBooks report with several accounts gives one source per account.
-- `toRecords(sources)` merges statements of the same account (several months) and ledgers of the same account name.
-- `groupRecords(records)` puts records for the same account together: same last 4 digits, or for a file with no account number, the account whose amounts it shares.
-- `compare(precedence, other)` compares two records over the dates both cover:
-  - exact amount within a 7-day window, best date and description first;
-  - batched deposits and splits (up to 5 lines);
-  - lines with the same date and description but a different amount, reported as "amount differs";
-  - automatic sign flip when the other record uses the opposite convention.
-- `ledgerRows(comparison)` gives the reconciled ledger. The record you choose takes precedence: its date, description and amount win. Lines only the other record has are listed after it.
+- `readTable(name, bytes)` reads a spreadsheet (.xlsx), a CSV or a PDF with a text table into a `Table`. The header row is found automatically. A PDF's table is rebuilt from where each piece of text sits on the page, with no OCR and nothing in the PDF executed.
+- `suggestMapping(a, b)` finds the key column the two tables share (unique, ID-like values) and pairs the other columns by name and by whether their values agree.
+- `new Diff(a, b, mapping, { prec, tols })` compares every matched row. Amounts compare as numbers, dates as dates and text as text. Repeated keys are paired in file order. Tolerances are written plainly: `1`, `$1`, `0.1%`, `1 or 0.1%`, `3 days`, `ignore case`, `exact`.
+- `diff.page(filter, offset, limit)` returns rows a page at a time; `diff.counts` and `diff.totals` summarise the result.
+- `xlsxw` and `csv` write the result out.
 
-Statement layouts read today, all tested on synthetic statements in `tests/fixtures` (invented numbers):
-- sectioned (Deposits / Withdrawals / Checks / Fees);
-- columnar (Deposits / Withdrawals / Balance, one- or two-line headers);
-- running balance;
-- signed amounts, CR/DR, (parentheses);
-- checks-paid tables;
-- card statements with transaction and posting dates and payments as negatives;
-- numeric, month-name and ISO dates.
-
-The bank and account type are read from the header for file naming (`<YYYYMM>_<Bank-Type>_Statement.pdf`).
+Every test uses synthetic data (`tests/fixtures`, invented numbers).
 
 Scanned (image-only) PDFs are not supported.
 
@@ -37,16 +26,18 @@ npm test
 ```
 
 ```ts
-import { readFile, toRecords, groupRecords, compare, ledgerRows } from "recon-core/records";
+import { readTable } from "recon-core/table";
+import { suggestMapping } from "recon-core/mapping";
+import { Diff } from "recon-core/diff";
 ```
 
-In a browser, set `GlobalWorkerOptions.workerSrc` for `pdfjs-dist` before reading a PDF.
+In a browser, call `setPdfWorker(url)` from `recon-core/pdftext` before reading a PDF.
 
 ## Limits
 
 These are built in so a hostile file can't hang a tab:
-- 50 MB per file, 60 pages and 50,000 text lines per PDF;
-- 20,000 transactions per statement;
+- 50 MB per file, 150,000 rows and 200 columns per table;
+- 60 pages and 50,000 text lines per PDF;
 - 2 million cells per spreadsheet;
 - money as integer cents, capped at safe integers.
 
