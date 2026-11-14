@@ -4,7 +4,7 @@ The comparison engine behind [nildiff](https://www.nildiff.com). It compares two
 
 This repo is public so anyone can check exactly what happens to their files.
 
-It is not designed for bank or credit card statement reconciliation, is not accounting software, and is not affiliated with any bank or software vendor. Results are not accounting, tax or financial advice.
+Results are produced automatically and provided as is, without warranty (see the license). They are not professional advice; check them against your source files before relying on them. This project is independent and not affiliated with any other company.
 
 ## What it does
 
