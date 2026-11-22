@@ -12,6 +12,7 @@ Results are produced automatically and provided as is, without warranty (see the
 - `suggestMapping(a, b)` finds the key column the two tables share (unique, ID-like values) and pairs the other columns by name and by whether their values agree.
 - `new Diff(a, b, mapping, { prec, tols })` compares every matched row. Amounts compare as numbers, dates as dates and text as text. Repeated keys are paired in file order. Tolerances are written plainly: `1`, `$1`, `0.1%`, `1 or 0.1%`, `3 days`, `ignore case`, `exact`.
 - `diff.page(filter, offset, limit)` returns rows a page at a time; `diff.counts` and `diff.totals` summarise the result.
+- Without a shared key (a ledger and a statement, two payment exports): `suggestSides(a, b)` picks each table's date, amount (or money in and money out), description and reference columns, and whether one file records the opposite sign. `matchTables(a, b, sideA, sideB, opts)` then lines up equal amounts within a date window (closest date first, then the most alike description, then a matching reference), finds groups of lines that add up exactly to one line on the other side, and shows same-amount lines just outside the window as timing differences. Totals split the difference into timing and unexplained; `tieOut(lines, opening, closing)` checks a balance roll-forward; `matchRows` exports the result.
 - `xlsxw` and `csv` write the result out.
 
 Every test uses synthetic data (`tests/fixtures`, invented numbers).
