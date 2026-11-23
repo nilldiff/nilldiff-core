@@ -1,3 +1,9 @@
+/** Text in whatever encoding a spreadsheet saved it: UTF-8, UTF-16 ("Unicode text", with its byte-order mark), or Windows-1252. */
+export const decodeText = (b: Uint8Array): string => {
+  if (b[0] === 0xff && b[1] === 0xfe) return new TextDecoder("utf-16le").decode(b);
+  if (b[0] === 0xfe && b[1] === 0xff) return new TextDecoder("utf-16be").decode(b);
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(b); } catch { return new TextDecoder("windows-1252").decode(b); }
+};
 export class CsvLimit extends Error {}
 /** RFC 4180 parser: quotes, escaped quotes, CRLF, BOM, delimiter sniffed from the first line. Blank lines are kept so row numbers match the file.
  *  The limits are checked while parsing, so a hostile file stops early instead of filling memory first. */
