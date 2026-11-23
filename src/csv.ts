@@ -22,6 +22,6 @@ export const parseCsv = (text: string, maxRows = Infinity, maxCells = Infinity):
 };
 
 /** Cells starting with = + - @ get a leading apostrophe so spreadsheets never run them as formulas. Fields holding a comma, semicolon or tab are quoted, so a spreadsheet that splits on any of them never starts a cell mid-field. */
-const safe = (s: string): string => (/^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s) ? `'${s}` : s);
+const safe = (s: string): string => (/^(\s*[=+\-@]|[\t\r])/.test(s) && !/^-?\d+(\.\d+)?$/.test(s) ? `'${s}` : s); // also after spaces, which some spreadsheets skip
 export const toCsv = (rows: (string | number)[][]): string =>
   "﻿" + rows.map((r) => r.map((x) => { const s = safe(String(x)); return /[",;\t\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(",")).join("\r\n");
