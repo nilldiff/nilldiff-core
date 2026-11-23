@@ -5,6 +5,8 @@ import { readSheet, TableError, type Table } from "../src/table.ts";
 import { suggestMapping } from "../src/mapping.ts";
 import { pdfLayout } from "../src/pdftext.ts";
 import { manyPiecesPdf } from "./hostile.ts";
+import { readXlsx } from "../src/xlsx.ts";
+import { strToU8, zipSync } from "fflate";
 
 /** Splits a CSV line the way a spreadsheet set to a semicolon (or tab) separator would: quotes respected. */
 const cellsBy = (line: string, d: string): string[] => { const out: string[] = []; let c = "", q = false; for (const ch of line) { if (ch === '"') q = !q; else if (ch === d && !q) { out.push(c); c = ""; } else c += ch; } out.push(c); return out; };
@@ -33,4 +35,17 @@ test("key detection: a wide table of unique text columns is bounded and still fi
 test("pdf: more than 500,000 pieces of text is refused before they are grouped into lines", async () => {
   await assert.rejects(pdfLayout(manyPiecesPdf(520_000)), /more than 500,000 pieces of text/);
   assert.ok((await pdfLayout(manyPiecesPdf(1000))).lines.length > 0); // a normal page still reads
+});
+
+const sheet1 = (rows: string) => zipSync({ "xl/workbook.xml": strToU8('<workbook><sheets><sheet name="S" sheetId="1" r:id="rId1"/></sheets></workbook>'),
+  "xl/_rels/workbook.xml.rels": strToU8('<Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>'), "xl/worksheets/sheet1.xml": strToU8(`<worksheet><sheetData>${rows}</sheetData></worksheet>`) });
+test("xlsx: one cell on row 1,048,576 is refused, not made into a million rows; a few empty rows keep their numbers", () => {
+  assert.throws(() => readXlsx(sheet1('<row r="1048576"><c r="A1048576" t="inlineStr"><is><t>x</t></is></c></row>')), /more than 100,000 empty rows/);
+  assert.deepEqual(readXlsx(sheet1('<row r="3"><c r="B3" t="inlineStr"><is><t>x</t></is></c></row>')), [[], [], ["", "x"]]);
+});
+test("xlsx: a character reference outside Unicode or a lone surrogate reads as U+FFFD (it threw)", () => {
+  assert.deepEqual(readXlsx(sheet1('<row r="1"><c r="A1" t="str"><v>a&#x99999999;b&#xD800;c&#65;</v></c></row>')), [["a�b�cA"]]);
+});
+test("csv out: a formula after leading spaces is neutralised too", () => {
+  assert.equal(toCsv([[" =HYPERLINK(\"x\")", "  +1+1", "-5.25"]]).slice(1), `"' =HYPERLINK(""x"")",'  +1+1,-5.25`);
 });

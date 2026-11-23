@@ -2,9 +2,11 @@ import { unzipSync } from "fflate";
 
 const MAX_CELLS = 2_000_000, MAX_PART = 64 * 1024 * 1024, MAX_TOTAL = 128 * 1024 * 1024, MAX_SHEETS = 64, MAX_COL = 16384;
 const td = new TextDecoder();
+/** A character reference outside Unicode, or half of a surrogate pair, reads as the replacement character (it used to throw). */
+const point = (n: number) => (Number.isInteger(n) && n >= 0 && n <= 0x10ffff && (n < 0xd800 || n > 0xdfff) ? String.fromCodePoint(n) : "\ufffd");
 const unesc = (s: string): string =>
   s.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (_, e: string) =>
-    e[0] === "#" ? String.fromCodePoint(e[1]!.toLowerCase() === "x" ? parseInt(e.slice(2), 16) : +e.slice(1)) : ({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" } as Record<string, string>)[e.toLowerCase()]!);
+    e[0] === "#" ? point(e[1]!.toLowerCase() === "x" ? parseInt(e.slice(2), 16) : +e.slice(1)) : ({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" } as Record<string, string>)[e.toLowerCase()]!);
 const col = (ref: string): number => {
   const n = [...ref].reduce((a, c) => a * 26 + c.charCodeAt(0) - 64, 0);
   if (ref.length > 3 || n > MAX_COL) throw new Error("xlsx column out of range");
@@ -56,6 +58,9 @@ export const readXlsx = (bytes: Uint8Array): string[][] => {
     }
     const n = Number(/\br="(\d+)"/.exec(r[0])?.[1] ?? rows.length + 1);
     if (n > 1_048_576) throw new Error("xlsx row number out of range");
+    // Row numbers are kept (empty rows stay empty rows), but not a gap of 100,000 empty rows: one cell on row 1,048,576 made a million
+    // rows from a 585-byte file.
+    if (n - rows.length > 100_000) throw new Error("xlsx has more than 100,000 empty rows in a row; it was not read");
     if ((total_cells += cells.length) > MAX_CELLS) throw new Error("xlsx is too large to read safely"); // rows are made dense up to their last column
     rows[n - 1] = Array.from(cells, (x) => x ?? "");
   }
